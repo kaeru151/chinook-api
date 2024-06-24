@@ -1,4 +1,7 @@
 from src import db
+from .tracks import Track
+from .albums import Album
+from .artists import Artist
 from dataclasses import dataclass
 
 @dataclass
@@ -56,12 +59,12 @@ class Genre:
             params = (self.id,)
         )
 
-    def get_track_ids(self) -> list[tuple]:
-        """Returns a list of all `tracks` with this genre
+    def get_tracks(self) -> list[Track]:
+        """Returns a list containing rows of table `tracks` with this genre
         
         Example:
-            >>> Genre.from_id(1).get_track_ids() 
-            [(1,), (2,), (3,), ...]
+            >>> Genre.from_id(3).get_tracks()
+            [Track(id=77, name='Enter Sandman'), Track(id=78, name='Master Of Puppets'), Track(id=79, name='Harvester Of Sorrow'), ...]
         """
         res = db.execute_sql(
             query = """
@@ -70,4 +73,41 @@ class Genre:
                     WHERE g.GenreId = ?;""",
             params = (self.id,)
         )
-        return res
+        return [Track.from_id(elem[0]) for elem in res]
+    
+    def get_albums(self) -> list[Album]:
+        """Returns a list containing rows of table `albums` with this genre
+        
+        Example:
+            >>> Genre.from_id(4).get_albums()
+            [Album(id=11, title='Out Of Exile'), Album(id=18, title='Body Count'), Album(id=39, title='International Superhits'), ...]
+
+        """
+        res = db.execute_sql(
+            query = """
+                    SELECT DISTINCT a.AlbumId FROM albums a
+                    INNER JOIN tracks t ON a.AlbumId = t.AlbumId 
+                    INNER JOIN genres g ON t.GenreId = g.GenreId
+                    WHERE g.GenreId = ?;""",
+            params = (self.id,)
+        )
+        return [Album.from_id(elem[0]) for elem in res]
+    
+    def get_artists(self) -> list[Artist]:
+        """Returns a list containing rows of table `artists` with this genre
+        
+        Example:
+            >>> Genre.from_id(9).get_artists()
+            [Artist(id=21, name='Various Artists'), Artist(id=150, name='U2'), Artist(id=252, name='Amy Winehouse'), ...]
+
+        """
+        res = db.execute_sql(
+            query = """
+                    SELECT DISTINCT ar.ArtistId FROM artists ar
+                    INNER JOIN albums al ON ar.ArtistId = al.ArtistId
+                    INNER JOIN tracks t ON al.AlbumId = t.AlbumId 
+                    INNER JOIN genres g ON t.GenreId = g.GenreId
+                    WHERE g.GenreId = ?;""",
+            params = (self.id,)
+        )
+        return [Artist.from_id(elem[0]) for elem in res]
