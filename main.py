@@ -19,7 +19,22 @@ def read_genre(genre_id: int):
         return None
     else:
         return genre
-    
+
+@app.post("/genres/")
+def insert_genre(genre: Genre):
+    genre.insert_into_table()
+    return {"message": "Added genre"}
+
+@app.delete("/genres/{genre_id}")
+def delete_genre(genre_id: int):
+    try:
+        genre = Genre.from_id(genre_id)
+    except ValueError:
+        return {"message": "Not successful"}
+    else:
+        genre.delete_from_table()
+        return {"message": "Deleted genre"}
+
 @app.get("/tracks/{track_id}")
 def read_track(track_id: int):
     try:
