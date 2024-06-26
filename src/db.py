@@ -3,7 +3,7 @@ from pathlib import Path
 
 DB_PATH = ""
 
-def execute_sql(query: str, params: tuple = ()):
+def execute_sql(query: str, params: tuple = ()) -> list[tuple]:
     """
     Connects to database specified by global `DB_PATH` and executes `query` (with optional `params`)
     

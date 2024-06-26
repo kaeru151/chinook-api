@@ -25,9 +25,16 @@ class Track:
             ValueError: TrackId -1 does not exist!
         """
         res = db.execute_sql(
-            query = "SELECT TrackId,Name,AlbumId,MediaTypeId,GenreId,Composer,Milliseconds,Bytes,UnitPrice FROM tracks WHERE TrackId = ?;",
+            "SELECT TrackId,Name,AlbumId,MediaTypeId,GenreId,Composer,Milliseconds,Bytes,UnitPrice FROM tracks WHERE TrackId = ?;",
             params = (track_id,) 
         )
         if not res:
             raise ValueError(f"TrackId {track_id} does not exist!")
         return cls(*res.pop())
+    
+def get_tracks_by_name(track_name: str) -> list[Track]:
+    res = db.execute_sql(
+        "SELECT TrackId FROM tracks WHERE Name LIKE ?;",
+        params = ("%"+track_name+"%",)
+    )
+    return [Track.from_id(elem[0]) for elem in res]
